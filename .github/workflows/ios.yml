@@ -1,0 +1,35 @@
+name: Build iOS App
+
+on:
+  push:
+    tags:
+      - '\d*\d.\d'
+    # Trigger the workflow only when the pushed tag matches the specified regex pattern
+    # The regex pattern '\d*\d.\d' matches tag formats like '1.0', '10.3', '2022.1', etc.
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Xcode
+        uses: actions/setup-xcode@v2
+        with:
+          xcode-version: '14.3'
+
+      - name: Build iOS App
+        run: |
+          xcodebuild clean archive -workspace Vision+Core-ML.xcworkspace -scheme Vision+Core-ML -archivePath Vision+Core-ML.xcarchive
+          xcodebuild archive -workspace Vision+Core-ML.xcworkspace -scheme Vision+Core-ML -archivePath Vision+Core-ML.xcarchive
+          xcodebuild -exportArchive -archivePath Vision+Core-ML.xcarchive -exportPath Vision+Core-ML.ipa -exportOptionsPlist ExportOptions.plist
+        # Replace 'MyProject.xcworkspace' and 'MyScheme' with your actual workspace and scheme names
+        # Modify the export options plist file as per your requirements
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: iOS-App-$GITHUB_REF_NAME
+          path: Vision+Core-ML.ipa
+
